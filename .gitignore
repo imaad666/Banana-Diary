@@ -54,3 +54,6 @@ config.js
 # User uploaded content
 uploads/
 images/generated/
+
+# Database files
+comics-database.json

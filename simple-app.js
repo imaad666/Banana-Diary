@@ -3,7 +3,7 @@ class ComicGenerator {
     constructor() {
         this.selectedStyle = 'comic';
         this.nanoBananaAPI = null;
-        this.savedComics = JSON.parse(localStorage.getItem('banana_comics') || '[]');
+        this.savedComics = [];
 
         this.init();
     }
@@ -77,23 +77,30 @@ class ComicGenerator {
             // Generate the comic
             const result = await this.nanoBananaAPI.generateComic(storyInput, this.selectedStyle);
 
+            // Frame the comic
+            const framedImageUrl = await this.frameComic(result.imageUrl);
+
             // Create comic entry
             const comic = {
                 id: Date.now(),
                 story: storyInput,
                 style: this.selectedStyle,
-                imageUrl: result.imageUrl,
+                imageUrl: framedImageUrl,
+                originalImageUrl: result.imageUrl,
                 createdAt: new Date().toISOString()
             };
 
-            // Save comic
+            // Save comic to backend
+            await this.saveComicToBackend(comic);
             this.savedComics.unshift(comic);
-            localStorage.setItem('banana_comics', JSON.stringify(this.savedComics));
 
             // Display result
             this.displayComic(comic);
             this.loadGallery();
             this.updateUsageStats();
+
+            // Reset loading state
+            this.setLoadingState(false);
 
         } catch (error) {
             console.error('Error generating comic:', error);
@@ -107,11 +114,11 @@ class ComicGenerator {
         }
     }
 
-    generateDemoComic(story) {
+    async generateDemoComic(story) {
         // Create a demo comic using canvas with 2x2 grid format
         const canvas = document.createElement('canvas');
         canvas.width = 800;
-        canvas.height = 600;
+        canvas.height = 800;
         const ctx = canvas.getContext('2d');
 
         // Style-based themes
@@ -235,22 +242,73 @@ class ComicGenerator {
         // Convert to data URL
         const imageUrl = canvas.toDataURL();
 
+        // Frame the comic
+        const framedImageUrl = await this.frameComic(imageUrl);
+
         // Create comic entry
         const comic = {
             id: Date.now(),
             story: story,
             style: this.selectedStyle,
-            imageUrl: imageUrl,
+            imageUrl: framedImageUrl,
+            originalImageUrl: imageUrl,
             createdAt: new Date().toISOString(),
             isDemo: true
         };
 
         // Save and display
+        await this.saveComicToBackend(comic);
         this.savedComics.unshift(comic);
-        localStorage.setItem('banana_comics', JSON.stringify(this.savedComics));
         this.displayComic(comic);
         this.loadGallery();
         this.setLoadingState(false);
+    }
+
+    async frameComic(comicImageUrl) {
+        return new Promise((resolve) => {
+            // Load the custom frame
+            const frameImg = new Image();
+            frameImg.onload = () => {
+                const frameCanvas = document.createElement('canvas');
+                frameCanvas.width = frameImg.width;
+                frameCanvas.height = frameImg.height;
+                const ctx = frameCanvas.getContext('2d');
+
+                // Draw the frame first
+                ctx.drawImage(frameImg, 0, 0);
+
+                // Load and position the comic image
+                const comicImg = new Image();
+                comicImg.onload = () => {
+                    // Calculate the inner area where the comic should go
+                    // Make the comic much larger to fill more of the frame
+                    const frameSize = frameImg.width;
+                    const comicSize = frameSize * 0.85; // Increased from 0.7 to 0.85 for much bigger comic
+                    const comicOffset = (frameSize - comicSize) / 2;
+
+                    // Draw the comic centered in the frame
+                    ctx.drawImage(comicImg, comicOffset, comicOffset, comicSize, comicSize);
+
+                    // Convert to data URL
+                    const framedDataUrl = frameCanvas.toDataURL('image/png', 0.95);
+                    resolve(framedDataUrl);
+                };
+
+                comicImg.onerror = () => {
+                    // If comic fails to load, return frame only
+                    resolve(frameCanvas.toDataURL('image/png', 0.95));
+                };
+
+                comicImg.src = comicImageUrl;
+            };
+
+            frameImg.onerror = () => {
+                // If frame fails to load, return original comic
+                resolve(comicImageUrl);
+            };
+
+            frameImg.src = './frame/FRAME.png';
+        });
     }
 
     displayComic(comic) {
@@ -277,7 +335,7 @@ class ComicGenerator {
             statusMessage.style.display = 'block';
         } else {
             generateBtn.disabled = false;
-            generateBtn.textContent = '🎨 Generate My Comic Strip';
+            generateBtn.textContent = '🎨 Generate My Strip';
             statusMessage.style.display = 'none';
         }
     }
@@ -286,8 +344,8 @@ class ComicGenerator {
         if (!this.currentComic) return;
 
         const link = document.createElement('a');
-        link.download = `comic-${this.currentComic.style}-${Date.now()}.png`;
-        link.href = this.currentComic.imageUrl;
+        link.download = `banana-comic-${this.currentComic.style}-${Date.now()}.png`;
+        link.href = this.currentComic.imageUrl; // This is already the framed version
         link.click();
     }
 
@@ -299,13 +357,16 @@ class ComicGenerator {
         this.currentComic = null;
     }
 
-    loadGallery() {
+    async loadGallery() {
+        // Load comics from backend
+        await this.loadComicsFromBackend();
+
         const gallery = document.getElementById('comics-gallery');
 
         if (this.savedComics.length === 0) {
             gallery.innerHTML = `
                 <div class="gallery-placeholder">
-                    <p>Your generated comics will appear here</p>
+                    <p>generated comics will appear here</p>
                 </div>
             `;
             return;
@@ -322,6 +383,53 @@ class ComicGenerator {
         `).join('');
     }
 
+    async saveComicToBackend(comic) {
+        try {
+            const response = await fetch('/api/comics', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    story: comic.story,
+                    style: comic.style,
+                    imageUrl: comic.imageUrl,
+                    createdAt: comic.createdAt
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to save comic');
+            }
+
+            const result = await response.json();
+            console.log('Comic saved successfully:', result);
+        } catch (error) {
+            console.error('Error saving comic to backend:', error);
+            // Fallback to localStorage if backend fails
+            const localComics = JSON.parse(localStorage.getItem('banana_comics_fallback') || '[]');
+            localComics.unshift(comic);
+            localStorage.setItem('banana_comics_fallback', JSON.stringify(localComics));
+        }
+    }
+
+    async loadComicsFromBackend() {
+        try {
+            const response = await fetch('/api/comics');
+
+            if (!response.ok) {
+                throw new Error('Failed to load comics');
+            }
+
+            const result = await response.json();
+            this.savedComics = result.comics || [];
+        } catch (error) {
+            console.error('Error loading comics from backend:', error);
+            // Fallback to localStorage
+            this.savedComics = JSON.parse(localStorage.getItem('banana_comics_fallback') || '[]');
+        }
+    }
+
     viewComic(comicId) {
         const comic = this.savedComics.find(c => c.id == comicId);
         if (comic) {
@@ -336,10 +444,8 @@ class ComicGenerator {
         if (this.nanoBananaAPI && this.nanoBananaAPI.rateLimiter) {
             const remaining = this.nanoBananaAPI.rateLimiter.getRemainingRequests();
             document.getElementById('daily-usage').textContent = `${200 - remaining.daily} / 200`;
-            document.getElementById('minute-usage').textContent = `${20 - remaining.perMinute} / 20`;
         } else {
             document.getElementById('daily-usage').textContent = '0 / 200';
-            document.getElementById('minute-usage').textContent = '0 / 20';
         }
     }
 }

@@ -81,7 +81,8 @@ CRITICAL LAYOUT REQUIREMENTS:
 - Each panel should be perfectly square or rectangular
 - Clear, thick borders separating each panel
 - ${guide.format}
-- Overall image should be landscape orientation (wider than tall)
+- Overall image should be SQUARE format (equal width and height)
+- Perfect square aspect ratio (1:1)
 
 STORY: "${sanitizedDescription}"
 

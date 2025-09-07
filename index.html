@@ -4,7 +4,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🍌 Banana Comic Strip Generator</title>
+    <title>🍌 Banana Diary</title>
+
+    <!-- Favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="./Favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="./Favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="./Favicon/favicon-16x16.png">
+    <link rel="manifest" href="./Favicon/site.webmanifest">
+    <link rel="shortcut icon" href="./Favicon/favicon.ico">
+
+    <!-- Meta tags for better SEO and sharing -->
+    <meta name="description"
+        content="Transform your daily stories into beautiful comic strips using Google's Nano Banana AI">
+    <meta name="keywords" content="comic strip generator, AI comics, visual diary, storytelling, Gemini AI">
+    <meta name="author" content="Banana Diary">
+
+    <!-- Open Graph meta tags for social sharing -->
+    <meta property="og:title" content="🍌 Banana Diary">
+    <meta property="og:description"
+        content="Transform your stories into beautiful comic strips using Google's Nano Banana AI">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="./Favicon/android-chrome-192x192.png">
+
+    <!-- Twitter Card meta tags -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="🍌 Banana Diary">
+    <meta name="twitter:description"
+        content="Transform your stories into beautiful comic strips using Google's Nano Banana AI">
+
     <link rel="stylesheet" href="styles.css">
     <script src="config.js"></script>
     <script src="api-integration.js"></script>
@@ -14,8 +41,8 @@
     <!-- Main Comic Generator Screen -->
     <div class="main-container">
         <header class="app-header">
-            <h1>🍌 Banana Comic Strip Generator</h1>
-            <p class="subtitle">Transform your stories into beautiful comic strips using AI</p>
+            <h1>🍌 Banana Diary</h1>
+            <p class="subtitle">Transform your stories into beautiful comic strips using Google's Nano Banana</p>
         </header>
 
         <div class="content-grid">
@@ -25,7 +52,7 @@
                     <h2>Tell Your Story</h2>
 
                     <label for="story-input">Describe your story in detail:</label>
-                    <textarea id="story-input" placeholder="• Morning activities - what did you do when you woke up?
+                    <textarea id="story-input" placeholder="• Throughout the day activities - what did you do when you woke up and afterwards? 
 • Key events of the day - meetings, meals, activities, interactions
 • Special moments - anything notable, funny, or memorable
 • Atmosphere & feelings - were you happy, excited, calm, busy?
@@ -72,7 +99,7 @@
                     </div>
 
                     <button id="generate-btn" class="generate-btn">
-                        🎨 Generate My Comic Strip
+                        🎨 Generate My Strip
                     </button>
 
                     <div id="status-message" class="status-message" style="display: none;">
@@ -123,25 +150,21 @@
 
         <!-- API Usage Info -->
         <div class="api-info">
-            <h4>ℹ️ API Usage Information</h4>
+            <h4>ℹ️ Usage Information</h4>
             <div class="usage-stats">
                 <div class="stat">
                     <span class="stat-label">Requests Today:</span>
                     <span id="daily-usage" class="stat-value">0 / 200</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-label">Per Minute:</span>
-                    <span id="minute-usage" class="stat-value">0 / 20</span>
                 </div>
             </div>
         </div>
 
         <!-- Gallery Section -->
         <div class="gallery-section">
-            <h2>🖼️ Your Comic Collection</h2>
+            <h2>🖼️ Comic Gallery</h2>
             <div id="comics-gallery" class="comics-gallery">
                 <div class="gallery-placeholder">
-                    <p>Your generated comics will appear here</p>
+                    <p>generated comics will appear here</p>
                 </div>
             </div>
         </div>

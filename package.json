@@ -5,7 +5,7 @@
   "main": "index.html",
   "scripts": {
     "dev": "python -m http.server 8000",
-    "start": "python -m http.server 8000",
+    "start": "node server.js",
     "build": "echo 'No build process needed for static files'",
     "serve": "npx http-server -p 8000 -c-1"
   },
@@ -18,18 +18,20 @@
     "visual-diary",
     "hackathon"
   ],
-  "author": "Banana Diary Team",
+  "author": "imaad666",
   "license": "MIT",
-  "dependencies": {},
+  "dependencies": {
+    "express": "^4.18.2"
+  },
   "devDependencies": {
     "http-server": "^14.1.1"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/banana-diary.git"
+    "url": "https://github.com/imaad666/Banana-Diary"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/banana-diary/issues"
+    "url": "https://github.com/imaad666/Banana-Diary/issues"
   },
-  "homepage": "https://github.com/yourusername/banana-diary#readme"
+  "homepage": "https://github.com/imaad666/Banana-Diary#readme"
 }
