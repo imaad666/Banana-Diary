@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍌 Banana Comic Strip Generator</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="config.js"></script>
+    <script src="api-integration.js"></script>
+</head>
+
+<body>
+    <!-- Main Comic Generator Screen -->
+    <div class="main-container">
+        <header class="app-header">
+            <h1>🍌 Banana Comic Strip Generator</h1>
+            <p class="subtitle">Transform your stories into beautiful comic strips using AI</p>
+        </header>
+
+        <div class="content-grid">
+            <!-- Input Section -->
+            <div class="input-section">
+                <div class="form-container">
+                    <h2>Tell Your Story</h2>
+
+                    <label for="story-input">Describe your story in detail:</label>
+                    <textarea id="story-input" placeholder="• Morning activities - what did you do when you woke up?
+• Key events of the day - meetings, meals, activities, interactions
+• Special moments - anything notable, funny, or memorable
+• Atmosphere & feelings - were you happy, excited, calm, busy?
+• Evening activities - how did you wind down?
+• People involved - friends, family, colleagues, pets
+• Locations - home, office, park, restaurant, etc." rows="8"></textarea>
+
+                    <div class="style-selection">
+                        <label>Choose your comic style:</label>
+                        <div class="style-grid">
+                            <button class="style-btn active" data-style="comic">
+                                <span class="style-icon">💥</span>
+                                <span class="style-name">Comic Book</span>
+                            </button>
+                            <button class="style-btn" data-style="ghibli">
+                                <span class="style-icon">🌸</span>
+                                <span class="style-name">Studio Ghibli</span>
+                            </button>
+                            <button class="style-btn" data-style="superhero">
+                                <span class="style-icon">⚡</span>
+                                <span class="style-name">Superhero</span>
+                            </button>
+                            <button class="style-btn" data-style="disney">
+                                <span class="style-icon">✨</span>
+                                <span class="style-name">Disney</span>
+                            </button>
+                            <button class="style-btn" data-style="manga">
+                                <span class="style-icon">🎌</span>
+                                <span class="style-name">Manga</span>
+                            </button>
+                            <button class="style-btn" data-style="pixar">
+                                <span class="style-icon">🎬</span>
+                                <span class="style-name">Pixar</span>
+                            </button>
+                            <button class="style-btn" data-style="watercolor">
+                                <span class="style-icon">🎨</span>
+                                <span class="style-name">Watercolor</span>
+                            </button>
+                            <button class="style-btn" data-style="minimalist">
+                                <span class="style-icon">⚪</span>
+                                <span class="style-name">Minimalist</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button id="generate-btn" class="generate-btn">
+                        🎨 Generate My Comic Strip
+                    </button>
+
+                    <div id="status-message" class="status-message" style="display: none;">
+                        <div class="loading-spinner"></div>
+                        <p id="status-text">Creating your comic strip... This may take a moment</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Output Section -->
+            <div class="output-section">
+                <div class="comic-display-container">
+                    <div id="comic-placeholder" class="comic-placeholder">
+                        <div class="placeholder-content">
+                            <span class="placeholder-icon">🎭</span>
+                            <h3>Your Comic Strip Will Appear Here</h3>
+                            <p>Enter your story and generate a comic to see the magic happen!</p>
+                        </div>
+                    </div>
+
+                    <div id="comic-result" class="comic-result" style="display: none;">
+                        <div class="comic-header">
+                            <h3>Your Comic Strip</h3>
+                            <div class="comic-actions">
+                                <button id="download-btn" class="action-btn">📥 Download</button>
+                                <button id="new-comic-btn" class="action-btn">🔄 Generate New</button>
+                            </div>
+                        </div>
+
+                        <div class="comic-image-container">
+                            <img id="generated-comic" alt="Generated Comic Strip" />
+                        </div>
+
+                        <div class="comic-details">
+                            <div class="story-used">
+                                <h4>Story Used:</h4>
+                                <p id="story-text"></p>
+                            </div>
+                            <div class="style-used">
+                                <h4>Style:</h4>
+                                <span id="style-badge" class="style-badge"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Usage Info -->
+        <div class="api-info">
+            <h4>ℹ️ API Usage Information</h4>
+            <div class="usage-stats">
+                <div class="stat">
+                    <span class="stat-label">Requests Today:</span>
+                    <span id="daily-usage" class="stat-value">0 / 200</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Per Minute:</span>
+                    <span id="minute-usage" class="stat-value">0 / 20</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gallery Section -->
+        <div class="gallery-section">
+            <h2>🖼️ Your Comic Collection</h2>
+            <div id="comics-gallery" class="comics-gallery">
+                <div class="gallery-placeholder">
+                    <p>Your generated comics will appear here</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="simple-app.js"></script>
+</body>
+
+</html>

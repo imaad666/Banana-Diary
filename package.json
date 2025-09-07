@@ -1,0 +1,35 @@
+{
+  "name": "banana-diary",
+  "version": "1.0.0",
+  "description": "A visual diary app that transforms daily memories into comic strips using Google's Nano Banana API",
+  "main": "index.html",
+  "scripts": {
+    "dev": "python -m http.server 8000",
+    "start": "python -m http.server 8000",
+    "build": "echo 'No build process needed for static files'",
+    "serve": "npx http-server -p 8000 -c-1"
+  },
+  "keywords": [
+    "diary",
+    "comic",
+    "ai",
+    "gemini",
+    "nano-banana",
+    "visual-diary",
+    "hackathon"
+  ],
+  "author": "Banana Diary Team",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/banana-diary.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/banana-diary/issues"
+  },
+  "homepage": "https://github.com/yourusername/banana-diary#readme"
+}
