@@ -94,7 +94,7 @@ class ComicGenerator {
             // Display result
             this.displayComic(comic);
             this.loadGallery();
-            this.updateUsageStats();
+            this.incrementUsageStats(); // Increment and update usage stats
 
             // Reset loading state
             this.setLoadingState(false);
@@ -258,6 +258,7 @@ class ComicGenerator {
         this.savedComics.unshift(comic);
         this.displayComic(comic);
         this.loadGallery();
+        this.incrementUsageStats(); // Increment usage for demo comics too
         this.setLoadingState(false);
     }
 
@@ -437,13 +438,49 @@ class ComicGenerator {
     }
 
     updateUsageStats() {
-        // Update API usage display
-        if (this.nanoBananaAPI && this.nanoBananaAPI.rateLimiter) {
-            const remaining = this.nanoBananaAPI.rateLimiter.getRemainingRequests();
-            document.getElementById('daily-usage').textContent = `${200 - remaining.daily} / 200`;
-        } else {
-            document.getElementById('daily-usage').textContent = '0 / 200';
+        // Get today's usage count from localStorage
+        const today = new Date().toDateString();
+        const usageKey = `banana_usage_${today}`;
+        const todayUsage = parseInt(localStorage.getItem(usageKey) || '0');
+
+        document.getElementById('daily-usage').textContent = `${todayUsage} / 200`;
+    }
+
+    incrementUsageStats() {
+        // Increment today's usage count
+        const today = new Date().toDateString();
+        const usageKey = `banana_usage_${today}`;
+        const currentUsage = parseInt(localStorage.getItem(usageKey) || '0');
+        const newUsage = currentUsage + 1;
+
+        localStorage.setItem(usageKey, newUsage.toString());
+
+        // Clean up old usage data (keep only last 7 days)
+        this.cleanupOldUsageData();
+
+        // Update display
+        this.updateUsageStats();
+    }
+
+    cleanupOldUsageData() {
+        const today = new Date();
+        const cutoffDate = new Date(today.getTime() - (7 * 24 * 60 * 60 * 1000)); // 7 days ago
+
+        // Get all localStorage keys
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith('banana_usage_')) {
+                const dateStr = key.replace('banana_usage_', '');
+                const keyDate = new Date(dateStr);
+                if (keyDate < cutoffDate) {
+                    keysToRemove.push(key);
+                }
+            }
         }
+
+        // Remove old keys
+        keysToRemove.forEach(key => localStorage.removeItem(key));
     }
 }
 
