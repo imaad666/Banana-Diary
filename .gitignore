@@ -49,7 +49,7 @@ tmp/
 temp/
 
 # API keys (if stored in separate files)
-config.js
+# config.js (now safe for git - uses env vars)
 
 # User uploaded content
 uploads/

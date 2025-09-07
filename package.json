@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "python -m http.server 8000",
     "start": "node server.js",
-    "build": "echo 'No build process needed for static files'",
+    "build": "node inject-env.js",
+    "vercel-build": "node inject-env.js",
     "serve": "npx http-server -p 8000 -c-1"
   },
   "keywords": [
