@@ -1,8 +1,8 @@
 // Configuration file for Banana Diary
 const CONFIG = {
     // Gemini API Configuration
-    // For development, use local key. For production, it will be injected by Vercel
-    GEMINI_API_KEY: window.GEMINI_API_KEY || 'AIzaSyC_vBTXaWKWBOFB9FuSHrSVo7kuF_bGREQ',
+    // API key should NEVER be exposed in frontend - use backend proxy instead
+    GEMINI_API_KEY: null, // API calls go through backend now
     GEMINI_API_BASE_URL: 'https://generativelanguage.googleapis.com/v1beta',
 
     // App Configuration

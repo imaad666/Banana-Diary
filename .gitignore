@@ -43,6 +43,7 @@ coverage/
 # Build outputs
 dist/
 build/
+public/
 
 # Temporary files
 tmp/

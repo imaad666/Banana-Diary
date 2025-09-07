@@ -1,4 +1,6 @@
 {
+    "buildCommand": "node build.js",
+    "outputDirectory": "public",
     "functions": {
         "api/comics.js": {
             "maxDuration": 30
@@ -8,6 +10,10 @@
         {
             "source": "/api/comics",
             "destination": "/api/comics.js"
+        },
+        {
+            "source": "/api/generate",
+            "destination": "/api/generate.js"
         },
         {
             "source": "/health",

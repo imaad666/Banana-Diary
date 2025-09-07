@@ -163,34 +163,18 @@ QUALITY REQUIREMENTS:
     }
 
     async callAPI(prompt) {
-        const url = `${this.baseUrl}/models/${this.model}:generateContent`;
-
-        const requestBody = {
-            contents: [{
-                parts: [{
-                    text: prompt
-                }]
-            }],
-            generationConfig: {
-                response_modalities: ['Text', 'Image'],
-                temperature: 0.7,
-                topP: 0.8,
-                topK: 40
-            }
-        };
-
-        const response = await fetch(url, {
+        // Use backend proxy instead of calling Gemini directly
+        const response = await fetch('/api/generate', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'X-goog-api-key': this.apiKey
+                'Content-Type': 'application/json'
             },
-            body: JSON.stringify(requestBody)
+            body: JSON.stringify({ prompt })
         });
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => null);
-            throw new Error(`API Error ${response.status}: ${errorData?.error?.message || 'Unknown error'}`);
+            throw new Error(`API Error ${response.status}: ${errorData?.error || 'Unknown error'}`);
         }
 
         return await response.json();

@@ -16,12 +16,9 @@ class ComicGenerator {
     }
 
     initializeAPI() {
-        if (window.CONFIG && window.CONFIG.GEMINI_API_KEY) {
-            this.nanoBananaAPI = new NanoBananaAPI(window.CONFIG.GEMINI_API_KEY);
-            console.log('API initialized successfully');
-        } else {
-            console.error('No API key found in configuration');
-        }
+        // API calls now go through backend proxy - no frontend API key needed
+        this.nanoBananaAPI = new NanoBananaAPI(null);
+        console.log('API proxy initialized successfully');
     }
 
     setupEventListeners() {
