@@ -11,8 +11,26 @@ class ComicGenerator {
     init() {
         this.setupEventListeners();
         this.initializeAPI();
+        this.migrateOldComics(); // Migrate from old storage
         this.loadGallery();
         this.updateUsageStats();
+    }
+
+    migrateOldComics() {
+        // Migrate from old banana_comics_fallback to new banana_comics_persistent
+        try {
+            const oldComics = JSON.parse(localStorage.getItem('banana_comics_fallback') || '[]');
+            const newComics = JSON.parse(localStorage.getItem('banana_comics_persistent') || '[]');
+
+            if (oldComics.length > 0) {
+                const mergedComics = this.mergeAndDeduplicateComics(newComics, oldComics);
+                localStorage.setItem('banana_comics_persistent', JSON.stringify(mergedComics));
+                localStorage.removeItem('banana_comics_fallback'); // Clean up old storage
+                console.log('Migrated comics to persistent storage');
+            }
+        } catch (error) {
+            console.error('Error migrating old comics:', error);
+        }
     }
 
     initializeAPI() {
@@ -382,6 +400,9 @@ class ComicGenerator {
     }
 
     async saveComicToBackend(comic) {
+        // Always save to localStorage for persistence
+        this.saveComicToLocalStorage(comic);
+
         try {
             const response = await fetch('/api/comics', {
                 method: 'POST',
@@ -397,35 +418,87 @@ class ComicGenerator {
             });
 
             if (!response.ok) {
-                throw new Error('Failed to save comic');
+                throw new Error('Failed to save comic to backend');
             }
 
             const result = await response.json();
-            console.log('Comic saved successfully:', result);
+            console.log('Comic saved to backend successfully:', result);
         } catch (error) {
-            console.error('Error saving comic to backend:', error);
-            // Fallback to localStorage if backend fails
-            const localComics = JSON.parse(localStorage.getItem('banana_comics_fallback') || '[]');
-            localComics.unshift(comic);
-            localStorage.setItem('banana_comics_fallback', JSON.stringify(localComics));
+            console.error('Backend save failed, using localStorage:', error);
+        }
+    }
+
+    saveComicToLocalStorage(comic) {
+        try {
+            const localComics = JSON.parse(localStorage.getItem('banana_comics_persistent') || '[]');
+
+            // Check if comic already exists (avoid duplicates)
+            const exists = localComics.some(c =>
+                c.story === comic.story &&
+                c.style === comic.style &&
+                Math.abs(new Date(c.createdAt) - new Date(comic.createdAt)) < 1000
+            );
+
+            if (!exists) {
+                localComics.unshift(comic);
+                // Keep only 100 comics in localStorage
+                if (localComics.length > 100) {
+                    localComics.splice(100);
+                }
+                localStorage.setItem('banana_comics_persistent', JSON.stringify(localComics));
+            }
+        } catch (error) {
+            console.error('Error saving to localStorage:', error);
         }
     }
 
     async loadComicsFromBackend() {
+        // Always load from localStorage first for immediate display
+        const localComics = this.loadComicsFromLocalStorage();
+
         try {
             const response = await fetch('/api/comics');
 
             if (!response.ok) {
-                throw new Error('Failed to load comics');
+                throw new Error('Failed to load comics from backend');
             }
 
             const result = await response.json();
-            this.savedComics = result.comics || [];
+            const backendComics = result.comics || [];
+
+            // Merge and deduplicate comics from both sources
+            this.savedComics = this.mergeAndDeduplicateComics(localComics, backendComics);
         } catch (error) {
-            console.error('Error loading comics from backend:', error);
-            // Fallback to localStorage
-            this.savedComics = JSON.parse(localStorage.getItem('banana_comics_fallback') || '[]');
+            console.error('Backend load failed, using localStorage:', error);
+            // Use only localStorage comics if backend fails
+            this.savedComics = localComics;
         }
+    }
+
+    loadComicsFromLocalStorage() {
+        try {
+            return JSON.parse(localStorage.getItem('banana_comics_persistent') || '[]');
+        } catch (error) {
+            console.error('Error loading from localStorage:', error);
+            return [];
+        }
+    }
+
+    mergeAndDeduplicateComics(localComics, backendComics) {
+        const allComics = [...localComics, ...backendComics];
+        const uniqueComics = [];
+        const seen = new Set();
+
+        for (const comic of allComics) {
+            const key = `${comic.story}_${comic.style}_${comic.createdAt}`;
+            if (!seen.has(key)) {
+                seen.add(key);
+                uniqueComics.push(comic);
+            }
+        }
+
+        // Sort by creation date (newest first)
+        return uniqueComics.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     }
 
     viewComic(comicId) {

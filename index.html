@@ -35,6 +35,12 @@
     <link rel="stylesheet" href="styles.css">
     <script src="config.js"></script>
     <script src="api-integration.js"></script>
+
+    <!-- Vercel Analytics -->
+    <script>
+        window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
 </head>
 
 <body>
@@ -150,7 +156,7 @@
 
         <!-- API Usage Info -->
         <div class="api-usage-compact">
-            <span id="daily-usage">0 / 200</span>
+            <span id="daily-usage">0 / 500</span>
             <span class="usage-label">requests today</span>
         </div>
 

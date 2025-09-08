@@ -1,37 +1,39 @@
-// Vercel serverless function for comics API
-import { readFileSync, writeFileSync, existsSync } from 'fs';
-import { join } from 'path';
+// Vercel serverless function for comics API with Blob storage
+import { put, list, del } from '@vercel/blob';
 
-const COMICS_FILE = '/tmp/comics-database.json';
-
-// Initialize comics database
-function initDatabase() {
-    if (!existsSync(COMICS_FILE)) {
-        writeFileSync(COMICS_FILE, JSON.stringify([]));
-    }
-}
-
-// Get all comics
-function getComics() {
+// Get all comics from Blob storage
+async function getComics() {
     try {
-        initDatabase();
-        const data = readFileSync(COMICS_FILE, 'utf8');
-        const comics = JSON.parse(data);
+        const { blobs } = await list({
+            prefix: 'comics/',
+        });
+
+        // Convert blobs to comics data
+        const comics = [];
+        for (const blob of blobs) {
+            try {
+                const response = await fetch(blob.url);
+                const comicData = await response.json();
+                comics.push(comicData);
+            } catch (error) {
+                console.error('Error loading comic from blob:', error);
+                // Skip corrupted comics
+            }
+        }
 
         // Return most recent comics first, limit to 100
         return comics
             .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
             .slice(0, 100);
     } catch (error) {
-        console.error('Error reading comics:', error);
+        console.error('Error reading comics from Blob storage:', error);
         return [];
     }
 }
 
-// Save a new comic
-function saveComic(comicData) {
+// Save a new comic to Blob storage
+async function saveComic(comicData) {
     try {
-        initDatabase();
         const { story, style, imageUrl, createdAt } = comicData;
 
         // Validate required fields
@@ -39,8 +41,9 @@ function saveComic(comicData) {
             throw new Error('Missing required fields: story, style, imageUrl');
         }
 
+        const comicId = Date.now() + Math.random();
         const newComic = {
-            id: Date.now() + Math.random(),
+            id: comicId,
             story: story.substring(0, 500), // Limit story length
             style,
             imageUrl,
@@ -48,30 +51,57 @@ function saveComic(comicData) {
             isPublic: true
         };
 
-        // Read existing comics
-        const data = readFileSync(COMICS_FILE, 'utf8');
-        const comics = JSON.parse(data);
+        // Save comic to Blob storage
+        const filename = `comics/comic-${comicId}.json`;
+        const blob = await put(filename, JSON.stringify(newComic), {
+            access: 'public',
+            addRandomSuffix: false
+        });
 
-        // Add new comic
-        comics.push(newComic);
+        console.log('Comic saved to Blob storage:', blob.url);
 
-        // Keep only the most recent 1000 comics
-        if (comics.length > 1000) {
-            comics.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-            comics.splice(1000);
-        }
-
-        // Save back to file
-        writeFileSync(COMICS_FILE, JSON.stringify(comics, null, 2));
+        // Clean up old comics if we have too many
+        await cleanupOldComics();
 
         return newComic;
     } catch (error) {
-        console.error('Error saving comic:', error);
+        console.error('Error saving comic to Blob storage:', error);
         throw error;
     }
 }
 
-export default function handler(req, res) {
+// Clean up old comics to keep storage manageable
+async function cleanupOldComics() {
+    try {
+        const { blobs } = await list({
+            prefix: 'comics/',
+        });
+
+        // If we have more than 1000 comics, delete the oldest ones
+        if (blobs.length > 1000) {
+            // Sort by upload time (oldest first)
+            const sortedBlobs = blobs.sort((a, b) => new Date(a.uploadedAt) - new Date(b.uploadedAt));
+
+            // Delete the oldest 100 comics
+            const blobsToDelete = sortedBlobs.slice(0, 100);
+
+            for (const blob of blobsToDelete) {
+                try {
+                    await del(blob.url);
+                } catch (error) {
+                    console.error('Error deleting old comic blob:', error);
+                }
+            }
+
+            console.log(`Cleaned up ${blobsToDelete.length} old comics`);
+        }
+    } catch (error) {
+        console.error('Error during cleanup:', error);
+        // Don't throw - cleanup failures shouldn't stop new saves
+    }
+}
+
+export default async function handler(req, res) {
     // Enable CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -84,19 +114,42 @@ export default function handler(req, res) {
 
     if (req.method === 'GET') {
         try {
-            const comics = getComics();
-            res.status(200).json({ success: true, comics });
+            const comics = await getComics();
+            res.status(200).json({
+                success: true,
+                comics,
+                storage: 'vercel-blob',
+                count: comics.length
+            });
         } catch (error) {
-            res.status(500).json({ success: false, error: 'Failed to load comics' });
+            console.error('GET /api/comics error:', error);
+            res.status(500).json({
+                success: false,
+                error: 'Failed to load comics',
+                storage: 'vercel-blob'
+            });
         }
     } else if (req.method === 'POST') {
         try {
-            const comic = saveComic(req.body);
-            res.status(200).json({ success: true, comic });
+            const comic = await saveComic(req.body);
+            res.status(200).json({
+                success: true,
+                comic,
+                storage: 'vercel-blob'
+            });
         } catch (error) {
-            res.status(400).json({ success: false, error: error.message });
+            console.error('POST /api/comics error:', error);
+            res.status(400).json({
+                success: false,
+                error: error.message,
+                storage: 'vercel-blob'
+            });
         }
     } else {
-        res.status(405).json({ success: false, error: 'Method not allowed' });
+        res.status(405).json({
+            success: false,
+            error: 'Method not allowed',
+            storage: 'vercel-blob'
+        });
     }
 }

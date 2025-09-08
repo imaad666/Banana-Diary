@@ -2,7 +2,7 @@
 const CONFIG = {
     // Gemini API Configuration
     // API key should NEVER be exposed in frontend - use backend proxy instead
-    GEMINI_API_KEY: null, // API calls go through backend now
+    vercel deploy    GEMINI_API_KEY: null, // API calls go through backend now
     GEMINI_API_BASE_URL: 'https://generativelanguage.googleapis.com/v1beta',
 
     // App Configuration
@@ -25,7 +25,7 @@ const CONFIG = {
     // API Limits (as per Nano Banana Hackathon)
     API_LIMITS: {
         IMAGES_PER_MINUTE: 20,
-        REQUESTS_PER_DAY: 200
+        REQUESTS_PER_DAY: 500
     }
 };
 

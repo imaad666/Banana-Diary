@@ -30,7 +30,7 @@ Transform your daily memories into beautiful comic strips using Google's Nano Ba
 
 ### API Limits
 - 20 images per minute
-- 200 requests per project per day (free tier)
+- 500 requests per project per day (free tier)
 
 ## 🎯 Hackathon Submission
 
