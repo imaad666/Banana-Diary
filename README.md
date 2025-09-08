@@ -48,12 +48,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🎬 Demo Video
 
-[Link to demo video will be added]
+[https://youtu.be/Pf6KVyZguew]
 
 ## 🌐 Live Demo
 
-[Link to live demo will be added]
-
+[https://banana-diary.vercel.app]
 ---
 
-Made with ❤️ for the Google Nano Banana Hackathon by I
+Made with ❤️ for the Google Nano Banana Hackathon by Imaad
